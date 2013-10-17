@@ -11,5 +11,5 @@ The iPhone battery status is shown giving a level and, if on charge, a charging 
 
 There are three indicators showing communication from Pebble to iPhone, iPhone to Pebble and whether an alert has been set. 
 
-
+I RECOMMEND REMOVING OTHER WATCHFACES USING SMARTWATCH PRO BEFORE INSTALLING. E.G. MODERN CALENDAR.
 
