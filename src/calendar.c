@@ -303,55 +303,6 @@ void process_events() {
 }
 
 /*
- * Messages incoming from the phone
- */
-void received_message(DictionaryIterator *received, AppContextRef context) {
- 
-   // Gather the bits of a calendar together	
-   Tuple *tuple = dict_find(received, CALENDAR_RESPONSE_KEY);
-	  
-   if (tuple) {
-	    set_status(STATUS_REPLY);
-    	uint8_t i, j;
-
-		if (count > received_rows) {
-      		i = received_rows;
-      		j = 0;
-        } else {
-      	    count = tuple->value->data[0];
-      	    i = 0;
-      	    j = 1;
-        }
-
-        while (i < count && j < tuple->length) {
-    	    memcpy(&temp_event, &tuple->value->data[j], sizeof(Event));
-      	    memcpy(&events[temp_event.index], &temp_event, sizeof(Event));
-
-      	    i++;
-      	    j += sizeof(Event);
-        }
-
-        received_rows = i;
-
-        if (count == received_rows) {
-			max_entries = count;
-			calendar_request_outstanding = false;
-			process_events();
-	    }
-	}
-	
-	tuple = dict_find(received, BATTERY_RESPONSE_KEY);
-
-    if (tuple) {
-        memset(&battery_status, 0, sizeof(BatteryStatus));
-        memcpy(&battery_status, &tuple->value->data[0], sizeof(BatteryStatus));
-
-		set_battery(battery_status.state, battery_status.level);
-    }
-
-}
-
-/*
  * Clear the event display area
  */
 void clear_event() {
@@ -387,6 +338,57 @@ void show_next_event() {
 	  show_event(entry_no);
   }
 }
+
+/*
+ * Messages incoming from the phone
+ */
+void received_message(DictionaryIterator *received, AppContextRef context) {
+ 
+   // Gather the bits of a calendar together	
+   Tuple *tuple = dict_find(received, CALENDAR_RESPONSE_KEY);
+	  
+   if (tuple) {
+	    set_status(STATUS_REPLY);
+    	uint8_t i, j;
+
+		if (count > received_rows) {
+      		i = received_rows;
+      		j = 0;
+        } else {
+      	    count = tuple->value->data[0];
+      	    i = 0;
+      	    j = 1;
+        }
+
+        while (i < count && j < tuple->length) {
+    	    memcpy(&temp_event, &tuple->value->data[j], sizeof(Event));
+      	    memcpy(&events[temp_event.index], &temp_event, sizeof(Event));
+
+      	    i++;
+      	    j += sizeof(Event);
+        }
+
+        received_rows = i;
+
+        if (count == received_rows) {
+			max_entries = count;
+			calendar_request_outstanding = false;
+			process_events();
+                             show_next_event();
+	    }
+	}
+	
+	tuple = dict_find(received, BATTERY_RESPONSE_KEY);
+
+    if (tuple) {
+        memset(&battery_status, 0, sizeof(BatteryStatus));
+        memcpy(&battery_status, &tuple->value->data[0], sizeof(BatteryStatus));
+
+		set_battery(battery_status.state, battery_status.level);
+    }
+
+}
+
 
 /*
  * Timer handling. Includes a hold off for a period of time if there is resource contention
@@ -439,7 +441,7 @@ void handle_calendar_timer(AppContextRef app_ctx, AppTimerHandle handle, uint32_
   // Put the date back into the display area	
   if (cookie == RESTORE_DATE) {
 	  app_timer_cancel_event(app_ctx, handle);
-	  showing_alert = true;
+	  showing_alert = false;
 	  show_next_event();
 	  return;
   }
