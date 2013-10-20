@@ -4,7 +4,7 @@
 #include "common.h"
 
 #define MY_UUID { 0x69, 0x8B, 0x3E, 0x04, 0xB1, 0x2E, 0x4F, 0xF5, 0xBF, 0xAD, 0x1B, 0xE6, 0xBD, 0xFE, 0xB4, 0xD7 }
-PBL_APP_INFO(MY_UUID, "Diary Face", "Max Baeumle/Fowler", 1, 0 /* App version */, DEFAULT_MENU_ICON, APP_INFO_WATCH_FACE);
+PBL_APP_INFO(MY_UUID, "Diary Face", "Max Baeumle/Fowler", 1, 1 /* App version */, DEFAULT_MENU_ICON, APP_INFO_WATCH_FACE);
 
 AppContextRef app_context;
 

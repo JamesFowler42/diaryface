@@ -55,9 +55,8 @@ void battery_request(DictionaryIterator *iter) {
  */
 void calendar_init(AppContextRef ctx) {
   app_context = ctx;
-  app_timer_send_event(ctx, 500, REQUEST_CALENDAR_KEY);
-  app_timer_send_event(ctx, 250, REQUEST_BATTERY_KEY);
-  app_timer_send_event(ctx, 750, ROTATE_EVENT);
+  app_timer_send_event(ctx, 250, REQUEST_CALENDAR_KEY);
+  app_timer_send_event(ctx, ROTATE_EVENT_INTERVAL_MS, ROTATE_EVENT);
 }
 
 /*
@@ -180,7 +179,7 @@ void queue_alert(int num, int32_t alarm_time, char *title, int32_t alert_event) 
   strncpy(timer_rec[num].event_desc, event.title, sizeof(event.title)); 
   timer_rec[num].active = true;
   strncpy(timer_rec[num].relative_desc, relative_temp, sizeof(relative_temp));
-  strncpy(timer_rec[num].location, event.location, sizeof(event.location));
+  strncpy(timer_rec[num].location, event.has_location ? event.location : empty_string, sizeof(event.location));
 }
 
 /*
@@ -374,7 +373,8 @@ void received_message(DictionaryIterator *received, AppContextRef context) {
 			max_entries = count;
 			calendar_request_outstanding = false;
 			process_events();
-                             show_next_event();
+            show_next_event();
+			app_timer_send_event(app_context, 250, REQUEST_BATTERY_KEY);
 	    }
 	}
 	
@@ -447,28 +447,41 @@ void handle_calendar_timer(AppContextRef app_ctx, AppTimerHandle handle, uint32_
   }
 
   // Server requests	  
-  if (cookie != REQUEST_CALENDAR_KEY && cookie != REQUEST_BATTERY_KEY)
-	  return;
+  if (cookie == REQUEST_CALENDAR_KEY) {
 
-  app_timer_cancel_event(app_ctx, handle);
+    app_timer_cancel_event(app_ctx, handle);
 	  
-  // If we're going to make a call to the phone, then a dictionary is a good idea.
-  DictionaryIterator *iter;
-  app_message_out_get(&iter);
+    // If we're going to make a call to the phone, then a dictionary is a good idea.
+    DictionaryIterator *iter;
+    app_message_out_get(&iter);
 
-  // We didn't get a dictionary - so go away and wait until resources are available
-  if (!iter) {
-	// Can't get an dictionary then come back in a second
-    app_timer_send_event(app_ctx, 1000, cookie);
-    return;
+    // We didn't get a dictionary - so go away and wait until resources are available
+    if (!iter) {
+	  // Can't get an dictionary then come back in a second
+      app_timer_send_event(app_ctx, 1000, cookie);
+      return;
+    }
+
+    // Make the appropriate call to the server
+  	calendar_request(iter);
+	  
+	// Set the timer to run again
+    app_timer_send_event(app_ctx, REQUEST_CALENDAR_INTERVAL_MS, cookie);
   }
 
-  // Make the appropriate call to the server
-  if (cookie == REQUEST_CALENDAR_KEY) {
-	calendar_request(iter);
-    app_timer_send_event(app_ctx, REQUEST_CALENDAR_INTERVAL_MS, cookie);
-  } else if (cookie == REQUEST_BATTERY_KEY) {
+  if (cookie == REQUEST_BATTERY_KEY) {
+
+  	app_timer_cancel_event(app_ctx, handle);
+	  
+  	// If we're going to make a call to the phone, then a dictionary is a good idea.
+  	DictionaryIterator *iter;
+  	app_message_out_get(&iter);
+
+  	// We didn't get a dictionary - forget it
+  	if (!iter)
+	    return;
+
+    // Make the appropriate call to the server
 	battery_request(iter);
-    app_timer_send_event(app_ctx, REQUEST_BATTERY_INTERVAL_MS, cookie);
   }
 }
