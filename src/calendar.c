@@ -8,7 +8,7 @@ uint8_t count;
 uint8_t received_rows;
 Event event;
 Event temp_event;
-char event_date[50];
+char event_date[21];
 int max_entries = 0;
 int alerts_issued = 0;
 int entry_no = 0;
@@ -55,6 +55,7 @@ void battery_request(DictionaryIterator *iter) {
  */
 void calendar_init(AppContextRef ctx) {
   app_context = ctx;
+  memset(&events, 0, sizeof(Event) * MAX_EVENTS);
   app_timer_send_event(ctx, 250, REQUEST_CALENDAR_KEY);
   app_timer_send_event(ctx, ROTATE_EVENT_INTERVAL_MS, ROTATE_EVENT);
 }
@@ -342,7 +343,7 @@ void show_next_event() {
  * Messages incoming from the phone
  */
 void received_message(DictionaryIterator *received, AppContextRef context) {
- 
+
    // Gather the bits of a calendar together	
    Tuple *tuple = dict_find(received, CALENDAR_RESPONSE_KEY);
 	  
@@ -361,7 +362,8 @@ void received_message(DictionaryIterator *received, AppContextRef context) {
 
         while (i < count && j < tuple->length) {
     	    memcpy(&temp_event, &tuple->value->data[j], sizeof(Event));
-      	    memcpy(&events[temp_event.index], &temp_event, sizeof(Event));
+			if (temp_event.index < MAX_EVENTS)
+      	        memcpy(&events[temp_event.index], &temp_event, sizeof(Event));
 
       	    i++;
       	    j += sizeof(Event);
@@ -422,6 +424,7 @@ void handle_calendar_timer(AppContextRef app_ctx, AppTimerHandle handle, uint32_
 		  return; // Already had the data for this event deleted - cannot show it.
 	  showing_alert = true;
       set_event_display(timer_rec[num].event_desc, timer_rec[num].relative_desc, timer_rec[num].location, 0);
+	  set_invert_when_showing_event(true);
 	  timer_rec[num].active = false;
 	  app_timer_send_event(app_ctx, 30000, RESTORE_DATE);	
 	  app_timer_send_event(app_ctx, 15000, SECOND_ALERT);	
@@ -443,12 +446,13 @@ void handle_calendar_timer(AppContextRef app_ctx, AppTimerHandle handle, uint32_
 	  app_timer_cancel_event(app_ctx, handle);
 	  showing_alert = false;
 	  show_next_event();
+	  set_invert_when_showing_event(false);
 	  return;
   }
 
   // Server requests	  
   if (cookie == REQUEST_CALENDAR_KEY) {
-
+	  
     app_timer_cancel_event(app_ctx, handle);
 	  
     // If we're going to make a call to the phone, then a dictionary is a good idea.

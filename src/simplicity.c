@@ -36,6 +36,7 @@ Layer pebble_layer;
 TextLayer text_event_title_layer;
 TextLayer text_event_start_date_layer;
 TextLayer text_event_location_layer;
+InverterLayer inverse_layer;
 
 int last_tm_mday_date = -1;
 int status_display = 0;
@@ -224,21 +225,21 @@ void handle_init(AppContextRef ctx) {
   layer_add_child(&window.layer, &line_layer);
  
   // Event title
-  text_layer_init(&text_event_title_layer, GRect(0, 18, window.layer.bounds.size.w, 21));
+  text_layer_init(&text_event_title_layer, GRect(1, 18, window.layer.bounds.size.w - 1, 21));
   text_layer_set_text_color(&text_event_title_layer, GColorWhite);
   text_layer_set_background_color(&text_event_title_layer, GColorClear);
   text_layer_set_font(&text_event_title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   layer_add_child(&window.layer, &text_event_title_layer.layer);
 
   // Date 
-  text_layer_init(&text_event_start_date_layer, GRect(0, 36, window.layer.bounds.size.w, 21));
+  text_layer_init(&text_event_start_date_layer, GRect(1, 36, window.layer.bounds.size.w - 1, 21));
   text_layer_set_text_color(&text_event_start_date_layer, GColorWhite);
   text_layer_set_background_color(&text_event_start_date_layer, GColorClear);
-  text_layer_set_font(&text_event_start_date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_font(&text_event_start_date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   layer_add_child(&window.layer, &text_event_start_date_layer.layer);
 
   // Location
-  text_layer_init(&text_event_location_layer, GRect(0, 54, window.layer.bounds.size.w, 21));
+  text_layer_init(&text_event_location_layer, GRect(1, 54, window.layer.bounds.size.w - 1, 21));
   text_layer_set_text_color(&text_event_location_layer, GColorWhite);
   text_layer_set_background_color(&text_event_location_layer, GColorClear);
   text_layer_set_font(&text_event_location_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
@@ -288,6 +289,11 @@ void handle_init(AppContextRef ctx) {
   pebble_layer.update_proc = &pebble_layer_update_callback;
   layer_add_child(&window.layer, &pebble_layer);
 
+  // Layer to invert when showing event
+  inverter_layer_init(&inverse_layer, GRect(0, 0, window.layer.bounds.size.w, 78));
+  layer_set_hidden(&inverse_layer.layer, true);
+  layer_add_child(&window.layer, &inverse_layer.layer);
+	
   // Put everything in an initial state
   set_battery(0,-1); 
   set_status(STATUS_REQUEST);
@@ -295,6 +301,13 @@ void handle_init(AppContextRef ctx) {
 	
   // Make sure the timers start but don't all go off together
   calendar_init(ctx);
+}
+
+/*
+ * Highlight the event
+ */
+void set_invert_when_showing_event(bool invert) {
+  layer_set_hidden(&inverse_layer.layer, !invert);
 }
 
 /*

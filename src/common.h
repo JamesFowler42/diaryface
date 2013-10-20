@@ -74,5 +74,6 @@ void received_message(DictionaryIterator *received, void *context);
 void set_status(int new_status_display);
 void set_event_display(char *event_title, char *event_start_date, char *location, int num);
 void set_battery(uint8_t state, int8_t level);
+void set_invert_when_showing_event(bool invert);
 
 #endif
