@@ -4,7 +4,7 @@
 #include "common.h"
 
 #define MY_UUID { 0x69, 0x8B, 0x3E, 0x04, 0xB1, 0x2E, 0x4F, 0xF5, 0xBF, 0xAD, 0x1B, 0xE6, 0xBD, 0xFE, 0xB4, 0xD7 }
-PBL_APP_INFO(MY_UUID, "Diary Face", "Max Baeumle/Fowler", 1, 1 /* App version */, DEFAULT_MENU_ICON, APP_INFO_WATCH_FACE);
+PBL_APP_INFO(MY_UUID, "Diary Face", "Max Baeumle/Fowler", 1, 2 /* App version */, DEFAULT_MENU_ICON, APP_INFO_WATCH_FACE);
 
 AppContextRef app_context;
 
@@ -38,18 +38,22 @@ TextLayer text_event_start_date_layer;
 TextLayer text_event_location_layer;
 InverterLayer inverse_layer;
 
-int last_tm_mday_date = -1;
-int status_display = 0;
+#ifdef INVERSE
+InverterLayer full_inverse_layer;
+#endif
+
+int g_last_tm_mday_date = -1;
+int g_status_display = 0;
 
 // Variables used for text display areas - Pebble hates these to take off and move
-char event_title_static[21];
-char event_start_date_static[50];
-char location_static[21];
-char time_text[] = "00:00";
-char date_text[] = "Xxxxxxxx xxx 00";
-uint8_t static_state = 0;
-int8_t static_level = -1;
-int static_entry_no = 0;
+char g_event_title_static[BASIC_SIZE];
+char g_event_start_date_static[BASIC_SIZE];
+char g_location_static[BASIC_SIZE];
+char g_time_text[BASIC_SIZE];
+char g_date_text[BASIC_SIZE];
+uint8_t g_static_state = 0;
+int8_t g_static_level = -1;
+int g_static_entry_no = 0;
 
 /*
  * Unload and return what we have taken
@@ -88,17 +92,17 @@ void status_layer_update_callback(Layer *layer, GContext *ctx) {
   
   graphics_context_set_compositing_mode(ctx, GCompOpAssign);
 	
-  if (status_display == STATUS_REQUEST) {
+  if (g_status_display == STATUS_REQUEST) {
      graphics_draw_bitmap_in_rect(ctx, &icon_status_1.bmp, GRect(0, 0, 38, 12));
-  } else if (status_display == STATUS_REPLY) {
+  } else if (g_status_display == STATUS_REPLY) {
      graphics_draw_bitmap_in_rect(ctx, &icon_status_2.bmp, GRect(0, 0, 38, 12));
-  } else if (status_display == STATUS_ALERT_SET) {
+  } else if (g_status_display == STATUS_ALERT_SET) {
      graphics_draw_bitmap_in_rect(ctx, &icon_status_3.bmp, GRect(0, 0, 38, 12));
   }
 }
 
 void set_status(int new_status_display) {
-	status_display = new_status_display;
+	g_status_display = new_status_display;
 	layer_mark_dirty(&status_layer);
 }
 
@@ -109,12 +113,12 @@ void battery_layer_update_callback(Layer *layer, GContext *ctx) {
   
   graphics_context_set_compositing_mode(ctx, GCompOpAssign);
 
-  if (static_state == 1 && static_level > 0 && static_level <= 100) {
+  if (g_static_state == 1 && g_static_level > 0 && g_static_level <= 100) {
     graphics_draw_bitmap_in_rect(ctx, &icon_battery.bmp, GRect(0, 0, 24, 12));
     graphics_context_set_stroke_color(ctx, GColorBlack);
     graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_rect(ctx, GRect(7, 4, (uint8_t)((static_level / 100.0) * 11.0), 4), 0, GCornerNone);
-  } else if (static_state == 2 || static_state == 3) {
+    graphics_fill_rect(ctx, GRect(7, 4, (uint8_t)((g_static_level / 100.0) * 11.0), 4), 0, GCornerNone);
+  } else if (g_static_state == 2 || g_static_state == 3) {
     graphics_draw_bitmap_in_rect(ctx, &icon_battery_charge.bmp, GRect(0, 0, 24, 12));
   }
 }
@@ -123,8 +127,8 @@ void battery_layer_update_callback(Layer *layer, GContext *ctx) {
  * Set battery display
  */
 void set_battery(uint8_t state, int8_t level) {
-	static_state = state;
-    static_level = level;	
+	g_static_state = state;
+    g_static_level = level;	
 	layer_mark_dirty(&battery_layer);
 }
 
@@ -134,17 +138,17 @@ void set_battery(uint8_t state, int8_t level) {
 void entry_layer_update_callback(Layer *layer, GContext *ctx) {
   	graphics_context_set_compositing_mode(ctx, GCompOpAssign);
 	
-	if (static_entry_no == 0)
+	if (g_static_entry_no == 0)
     	graphics_draw_bitmap_in_rect(ctx, &icon_entry_0.bmp, GRect(0, 0, 60, 12));
-	else if (static_entry_no == 1)
+	else if (g_static_entry_no == 1)
     	graphics_draw_bitmap_in_rect(ctx, &icon_entry_1.bmp, GRect(0, 0, 60, 12));
-	else if (static_entry_no == 2)
+	else if (g_static_entry_no == 2)
     	graphics_draw_bitmap_in_rect(ctx, &icon_entry_2.bmp, GRect(0, 0, 60, 12));
-	else if (static_entry_no == 3)
+	else if (g_static_entry_no == 3)
     	graphics_draw_bitmap_in_rect(ctx, &icon_entry_3.bmp, GRect(0, 0, 60, 12));
-	else if (static_entry_no == 4)
+	else if (g_static_entry_no == 4)
     	graphics_draw_bitmap_in_rect(ctx, &icon_entry_4.bmp, GRect(0, 0, 60, 12));
-	else if (static_entry_no == 5)
+	else if (g_static_entry_no == 5)
     	graphics_draw_bitmap_in_rect(ctx, &icon_entry_5.bmp, GRect(0, 0, 60, 12));
 }
 
@@ -152,13 +156,13 @@ void entry_layer_update_callback(Layer *layer, GContext *ctx) {
  * Display update in the event area
  */
 void set_event_display(char *event_title, char *event_start_date, char *location, int num) {
-	strncpy(event_title_static, event_title, sizeof(event_title_static));
-	strncpy(event_start_date_static, event_start_date, sizeof(event_start_date_static));
-	strncpy(location_static, location, sizeof(location_static));
-    text_layer_set_text(&text_event_title_layer, event_title_static);
-    text_layer_set_text(&text_event_start_date_layer, event_start_date_static);
-    text_layer_set_text(&text_event_location_layer, location_static);
-    static_entry_no = num;
+	strncpy(g_event_title_static, event_title, BASIC_SIZE);
+	strncpy(g_event_start_date_static, event_start_date, BASIC_SIZE);
+	strncpy(g_location_static, location, BASIC_SIZE);
+    text_layer_set_text(&text_event_title_layer, g_event_title_static);
+    text_layer_set_text(&text_event_start_date_layer, g_event_start_date_static);
+    text_layer_set_text(&text_event_location_layer, g_location_static);
+    g_static_entry_no = num;
     layer_mark_dirty(&entry_layer);
 }
 
@@ -301,6 +305,12 @@ void handle_init(AppContextRef ctx) {
 	
   // Make sure the timers start but don't all go off together
   calendar_init(ctx);
+	
+  // Configurable inverse
+  #ifdef INVERSE
+  inverter_layer_init(&full_inverse_layer, GRect(0, 0, window.layer.bounds.size.w, window.layer.bounds.size.h));
+  layer_add_child(&window.layer, &full_inverse_layer.layer);
+  #endif
 }
 
 /*
@@ -316,15 +326,17 @@ void set_invert_when_showing_event(bool invert) {
 void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *t) {
 
     // Only update the date when it's changed.
-	if (t->tick_time->tm_mday != last_tm_mday_date) {
-		last_tm_mday_date = t->tick_time->tm_mday;
-        string_format_time(date_text, sizeof(date_text), "%a, %b %e", t->tick_time);
-        text_layer_set_text(&text_date_layer, date_text);
+	if (t->tick_time->tm_mday != g_last_tm_mday_date) {
+		g_last_tm_mday_date = t->tick_time->tm_mday;
+        string_format_time(g_date_text, BASIC_SIZE, "%a, %b %e", t->tick_time);
+        text_layer_set_text(&text_date_layer, g_date_text);
 	}
 
-    string_format_time(time_text, sizeof(time_text), "%R", t->tick_time);
+    string_format_time(g_time_text, BASIC_SIZE, "%R", t->tick_time);
 
-    text_layer_set_text(&text_time_layer, time_text);
+    text_layer_set_text(&text_time_layer, g_time_text);
+	
+	sync_timed_event(t->tick_time->tm_min, ctx);
 }
 
 /*

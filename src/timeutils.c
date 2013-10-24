@@ -58,3 +58,31 @@ bool is_overnight() {
     get_time(&time);
 	return (time.tm_hour >= OVERNIGHT_START && time.tm_hour <= OVERNIGHT_END);
 }
+
+/*
+ * Crude conversion of character strings to integer
+ */
+int a_to_i(char *val, int len) {
+	int result = 0;
+	for (int i=0; i < len; i++) {
+		if (val[i] < '0' || val[i] > '9')
+			break;
+		result = result * 10;
+		result = result + (val[i]-'0');
+	}
+	return result;
+}
+
+/*
+ * is the date provided today?
+ */
+bool is_date_today(char *date) {
+	char temp[6];
+	PblTm time;
+  	  get_time(&time);
+	  string_format_time(temp, sizeof(temp), "%m/%d", &time);
+	if (strncmp(date, temp, 5) == 0)
+		return true;
+	else
+		return false;
+}

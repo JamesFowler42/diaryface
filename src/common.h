@@ -2,6 +2,8 @@
 #define common_h
 
 #include "pebble_os.h"
+	
+//#define INVERSE
 
 #define RECONNECT_KEY 0
 #define REQUEST_CALENDAR_KEY 1
@@ -19,6 +21,7 @@
 #define CLOCK_STYLE_24H 2
 	
 #define MAX_EVENTS 15
+#define ROT_MAX 5
 	
 #define STATUS_REQUEST 1
 #define STATUS_REPLY 2
@@ -26,13 +29,19 @@
 	
 #define	MAX_ALLOWABLE_ALERTS 10
 
+#define BASIC_SIZE 21
+#define START_DATE_SIZE 18
+#define CLOSE_DATE_SIZE 6
+#define CLOSE_DAY_NAME_SIZE 10
+
+	
 typedef struct {
   uint8_t index;
-  char title[21];
+  char title[BASIC_SIZE];
   bool has_location;
-  char location[21];
+  char location[BASIC_SIZE];
   bool all_day;
-  char start_date[18];
+  char start_date[START_DATE_SIZE];
   int32_t alarms[2];
 } Event;
 
@@ -42,19 +51,19 @@ typedef struct {
 } BatteryStatus;
 
 typedef struct {
-  char date[6];
-  char dayName[10];
+  char date[CLOSE_DATE_SIZE];
+  char dayName[CLOSE_DAY_NAME_SIZE];
 } CloseDay;
 
 typedef struct {
   AppTimerHandle handle;
-  char event_desc[21];
   bool active;
-  char relative_desc[21]; 
-  char location[21];
+  char event_desc[BASIC_SIZE];
+  char relative_desc[BASIC_SIZE]; 
+  char location[BASIC_SIZE];
 } TimerRecord;
 
-#define REQUEST_CALENDAR_INTERVAL_MS 600003
+
 #define ROTATE_EVENT_INTERVAL_MS 3005
 #define ROTATE_EVENT_INTERVAL_OVERNIGHT_MS 10005
 
@@ -64,6 +73,9 @@ typedef struct {
 #define TODAY "Today"
 #define TOMORROW "Tomorrow"
 #define ALL_DAY "All day"
+#define TEXT_NOW "Now"
+#define TEXT_MINS "In %ld mins"
+#define TEXT_HRS "In %ld hours"
 	
 void time_plus_day(PblTm *time, int daysToAdvance);
 bool is_overnight();
@@ -75,5 +87,8 @@ void set_status(int new_status_display);
 void set_event_display(char *event_title, char *event_start_date, char *location, int num);
 void set_battery(uint8_t state, int8_t level);
 void set_invert_when_showing_event(bool invert);
+void sync_timed_event(int tm_min, AppContextRef ctx);
+int a_to_i(char *val, int len);
+bool is_date_today(char *date);
 
 #endif

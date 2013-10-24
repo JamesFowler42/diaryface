@@ -1,24 +1,49 @@
 {
     "media": [
         {
-            "defName": "IMAGE_STATUS_3",
+            "defName": "PEBBLE",
             "type": "png",
-            "file": "images/status3.png"
+            "file": "images/pebble.png"
         },
         {
-            "defName": "IMAGE_STATUS_2",
+            "defName": "ENTRY_5",
             "type": "png",
-            "file": "images/status2.png"
+            "file": "images/entry-5.png"
         },
         {
-            "defName": "IMAGE_STATUS_1",
+            "defName": "ENTRY_4",
             "type": "png",
-            "file": "images/status1.png"
+            "file": "images/entry-4.png"
         },
         {
-            "defName": "BATTERY_ICON",
+            "defName": "ENTRY_3",
             "type": "png",
-            "file": "images/battery_icon.png"
+            "file": "images/entry-3.png"
+        },
+        {
+            "defName": "ENTRY_2",
+            "type": "png",
+            "file": "images/entry-2.png"
+        },
+        {
+            "defName": "ENTRY_0",
+            "type": "png",
+            "file": "images/entry-0.png"
+        },
+        {
+            "defName": "ENTRY_1",
+            "type": "png",
+            "file": "images/entry-1.png"
+        },
+        {
+            "defName": "BATTERY_CHARGE_ICON",
+            "type": "png",
+            "file": "images/battery-charge.png"
+        },
+        {
+            "defName": "FONT_ROBOTO_CONDENSED_21",
+            "type": "font",
+            "file": "fonts/Roboto-Condensed.ttf"
         },
         {
             "characterRegex": "[:0-9]",
@@ -27,49 +52,24 @@
             "file": "fonts/Roboto-Bold.ttf"
         },
         {
-            "defName": "FONT_ROBOTO_CONDENSED_21",
-            "type": "font",
-            "file": "fonts/Roboto-Condensed.ttf"
+            "defName": "BATTERY_ICON",
+            "type": "png",
+            "file": "images/battery_icon.png"
         },
         {
-            "defName": "BATTERY_CHARGE_ICON",
+            "defName": "IMAGE_STATUS_1",
             "type": "png",
-            "file": "images/battery-charge.png"
+            "file": "images/status1.png"
         },
         {
-            "defName": "ENTRY_1",
+            "defName": "IMAGE_STATUS_2",
             "type": "png",
-            "file": "images/entry-1.png"
+            "file": "images/status2.png"
         },
         {
-            "defName": "ENTRY_0",
+            "defName": "IMAGE_STATUS_3",
             "type": "png",
-            "file": "images/entry-0.png"
-        },
-        {
-            "defName": "ENTRY_2",
-            "type": "png",
-            "file": "images/entry-2.png"
-        },
-        {
-            "defName": "ENTRY_3",
-            "type": "png",
-            "file": "images/entry-3.png"
-        },
-        {
-            "defName": "ENTRY_4",
-            "type": "png",
-            "file": "images/entry-4.png"
-        },
-        {
-            "defName": "ENTRY_5",
-            "type": "png",
-            "file": "images/entry-5.png"
-        },
-        {
-            "defName": "PEBBLE",
-            "type": "png",
-            "file": "images/pebble.png"
+            "file": "images/status3.png"
         }
     ],
     "friendlyVersion": "VERSION",
